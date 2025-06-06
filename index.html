@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>街机闯关游戏</title>
+    <title>ECS 架构游戏</title>
     <style>
         html, body {
             margin: 0;
@@ -62,6 +62,19 @@
             60% { content: '..'; }
             80%, 100% { content: '...'; }
         }
+        /* 架构信息 */
+        .architecture-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border-radius: 5px;
+            z-index: 100;
+        }
         /* 横屏提示 */
         .rotate-tip {
             display: none;
@@ -87,18 +100,26 @@
     </style>
 </head>
 <body>
+    <div class="architecture-info">
+        <div>🎮 ECS 架构游戏</div>
+        <div>Entity-Component-System</div>
+        <div>按F12查看控制台日志</div>
+    </div>
     <div id="game"></div>
-    <div class="loading">游戏加载中</div>
+    <div class="loading">ECS 游戏加载中</div>
     <div class="rotate-tip">
         为了获得最佳游戏体验<br>
-        请将设备横向持握
+        请将设备横向持握<br><br>
+        <small>ECS 架构版本</small>
     </div>
     <script>
         // 移除加载提示
         window.addEventListener('load', () => {
             const loading = document.querySelector('.loading');
             if (loading) {
-                loading.style.display = 'none';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 1000);
             }
         });
 
@@ -126,6 +147,11 @@
                 window.scrollTo(0, 0);
             }, 200);
         });
+
+        // 控制台欢迎信息
+        console.log('%c🎮 ECS 架构游戏启动', 'color: #00ff00; font-size: 20px; font-weight: bold;');
+        console.log('%c架构类型: Entity-Component-System', 'color: #00aaff; font-size: 14px;');
+        console.log('%c特点: 松耦合、易扩展、高性能', 'color: #ffaa00; font-size: 12px;');
     </script>
 </body>
 </html>

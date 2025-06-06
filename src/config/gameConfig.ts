@@ -1,8 +1,8 @@
-import { Types } from 'phaser';
+import 'phaser';
 import { MainScene } from '../scenes/MainScene';
 import { GameOverScene } from '../scenes/GameOverScene';
 
-const gameConfig: Types.Core.GameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'game',
     width: 800,
@@ -35,4 +35,4 @@ const gameConfig: Types.Core.GameConfig = {
     }
 };
 
-export default gameConfig;
+export default gameConfig; 

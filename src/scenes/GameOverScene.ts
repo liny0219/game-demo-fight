@@ -1,97 +1,72 @@
-import { Scene } from 'phaser';
-import { Logger } from '../utils/Logger';
-import { Debug } from '../utils/Debug';
+import 'phaser';
 
-interface GameOverData {
-    score: number;
-    wave: number;
-}
-
-export class GameOverScene extends Scene {
-    private logger: Logger;
-    private debug: Debug;
+export class GameOverScene extends Phaser.Scene {
+    private score: number = 0;
+    private wave: number = 0;
 
     constructor() {
         super({ key: 'GameOverScene' });
-        this.logger = Logger.getInstance();
-        this.debug = Debug.getInstance();
     }
 
-    init(data: GameOverData): void {
-        // 清理之前场景的调试信息
-        this.debug.destroy();
+    init(data: { score: number; wave: number }): void {
+        this.score = data.score || 0;
+        this.wave = data.wave || 0;
     }
 
-    create(data: GameOverData): void {
-        this.logger.log('Scene', 'GameOverScene created');
-        this.debug.init(this);
+    create(): void {
+        const centerX = this.cameras.main.centerX;
+        const centerY = this.cameras.main.centerY;
 
-        const width = this.cameras.main.width;
-        const height = this.cameras.main.height;
+        // 背景
+        this.add.rectangle(centerX, centerY, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.8);
 
-        // 创建半透明黑色背景
-        this.add.rectangle(0, 0, width, height, 0x000000, 0.8)
-            .setOrigin(0);
-
-        // 创建游戏结束标题
-        this.add.text(width / 2, height / 3, '游戏结束', {
-            fontSize: '64px',
+        // 游戏结束标题
+        this.add.text(centerX, centerY - 150, '游戏结束', {
+            fontSize: '48px',
             color: '#ff0000',
-            stroke: '#000',
-            strokeThickness: 8,
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // 显示得分和波数
-        this.add.text(width / 2, height / 2, [
-            `得分: ${data.score}`,
-            `波数: ${data.wave}`
-        ], {
+        // 最终得分
+        this.add.text(centerX, centerY - 80, `最终得分: ${this.score}`, {
             fontSize: '32px',
-            color: '#ffffff',
-            stroke: '#000',
-            strokeThickness: 4,
-            align: 'center',
-            lineSpacing: 20
+            color: '#ffffff'
         }).setOrigin(0.5);
 
-        // 创建重新开始按钮
-        const restartButton = this.add.text(width / 2, height * 2 / 3, '点击重新开始', {
-            fontSize: '32px',
-            color: '#00ff00',
-            backgroundColor: '#000000',
-            stroke: '#000',
-            strokeThickness: 4,
+        // 到达波数
+        this.add.text(centerX, centerY - 40, `到达波数: ${this.wave}`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        // 重新开始按钮
+        const restartButton = this.add.text(centerX, centerY + 40, '重新开始', {
+            fontSize: '24px',
+            color: '#ffffff',
+            backgroundColor: '#333333',
             padding: { x: 20, y: 10 }
-        }).setOrigin(0.5)
-            .setInteractive({ useHandCursor: true });
+        }).setOrigin(0.5).setInteractive();
 
-        // 添加按钮动画
-        this.tweens.add({
-            targets: restartButton,
-            scaleX: 1.1,
-            scaleY: 1.1,
-            duration: 1000,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        // 添加点击事件
         restartButton.on('pointerdown', () => {
-            this.debug.logEvent('Game', 'Restart clicked');
-            // 清理当前场景
-            this.debug.destroy();
-            // 启动主场景
             this.scene.start('MainScene');
         });
 
-        // 添加渐入动画
-        this.cameras.main.fadeIn(1000);
-    }
+        // 提示信息
+        this.add.text(centerX, centerY + 120, '点击"重新开始"或按任意键重新游戏', {
+            fontSize: '16px',
+            color: '#cccccc'
+        }).setOrigin(0.5);
 
-    shutdown(): void {
-        // 清理场景资源
-        this.debug.destroy();
+        // 键盘重新开始
+        this.input.keyboard?.once('keydown', () => {
+            this.scene.start('MainScene');
+        });
+
+        // 触摸重新开始
+        this.input.once('pointerdown', () => {
+            this.scene.start('MainScene');
+        });
+
+        console.log(`游戏结束场景创建完成 - 得分: ${this.score}, 波数: ${this.wave}`);
     }
-}
+} 
