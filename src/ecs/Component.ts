@@ -33,6 +33,7 @@ export abstract class Component {
      * 基类可以用于添加通用的组件功能，如更新时间戳、标识符等。
      */
     constructor() {
+        console.log(`[Component] 创建组件: ${this.constructor.name}`);
         // 基类暂时没有通用属性，但为未来扩展预留
         // 可以在这里添加如创建时间、更新时间等通用属性
     }
@@ -60,6 +61,7 @@ export abstract class Component {
     }
     
     destroy?(): void {
+        console.log(`[Component] 销毁组件: ${this.constructor.name}`);
         // 默认什么都不做，子类可以重写
     }
 
@@ -76,7 +78,10 @@ export abstract class Component {
      *     return new PositionComponent(this.x, this.y);
      * }
      */
-    clone?(): Component;
+    clone?(): Component {
+        console.log(`[Component] 克隆组件: ${this.constructor.name}`);
+        return this;
+    }
 
     /**
      * 序列化方法 - 将组件数据转换为可序列化的对象
@@ -91,7 +96,10 @@ export abstract class Component {
      *     return { x: this.x, y: this.y, type: 'Position' };
      * }
      */
-    serialize?(): any;
+    serialize?(): any {
+        console.log(`[Component] 序列化组件: ${this.constructor.name}`);
+        return {};
+    }
 
     /**
      * 反序列化方法 - 从序列化数据恢复组件状态
@@ -106,5 +114,7 @@ export abstract class Component {
      *     this.y = data.y;
      * }
      */
-    deserialize?(data: any): void;
+    deserialize?(data: any): void {
+        console.log(`[Component] 反序列化组件: ${this.constructor.name}`);
+    }
 } 

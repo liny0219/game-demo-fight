@@ -27,8 +27,8 @@ export class Entity {
     /** 当前实体的ID */
     public readonly id: number;
     
-    /** 存储所有组件的映射表，使用组件构造函数名作为键 */
-    private components: Map<string, Component> = new Map();
+    /** 存储所有组件的映射表，使用组件类型作为键 */
+    private components: Map<Function, Component> = new Map();
     private scene: Phaser.Scene;
 
     /**
@@ -38,6 +38,7 @@ export class Entity {
     constructor(scene: Phaser.Scene) {
         this.id = Entity.nextId++;
         this.scene = scene;
+        console.log(`[Entity] 创建新实体 ID: ${this.id}`);
     }
 
     /**
@@ -52,7 +53,9 @@ export class Entity {
      * entity.addComponent(new VelocityComponent(100, 0));
      */
     addComponent<T extends Component>(component: T): T {
-        this.components.set(component.constructor.name, component);
+        const componentType = component.constructor;
+        console.log(`[Entity ${this.id}] 添加组件: ${componentType.name}`);
+        this.components.set(componentType, component);
         component.entity = this;
         return component;
     }
@@ -68,11 +71,13 @@ export class Entity {
      * entity.removeComponent(VelocityComponent);
      */
     removeComponent<T extends Component>(componentClass: new (...args: any[]) => T): void {
-        const name = componentClass.name;
-        const component = this.components.get(name);
+        console.log(`[Entity ${this.id}] 移除组件: ${componentClass.name}`);
+        const component = this.components.get(componentClass);
         if (component) {
             component.destroy?.();
-            this.components.delete(name);
+            this.components.delete(componentClass);
+        } else {
+            console.warn(`[Entity ${this.id}] 尝试移除不存在的组件: ${componentClass.name}`);
         }
     }
 
@@ -91,7 +96,13 @@ export class Entity {
      * }
      */
     getComponent<T extends Component>(componentClass: new (...args: any[]) => T): T | undefined {
-        return this.components.get(componentClass.name) as T;
+        const component = this.components.get(componentClass);
+        if (!component) {
+            console.warn(`[Entity ${this.id}] 尝试获取不存在的组件: ${componentClass.name}`);
+            return undefined;
+        }
+        console.log(`[Entity ${this.id}] 获取组件: ${componentClass.name}`);
+        return component as T;
     }
 
     /**
@@ -108,7 +119,9 @@ export class Entity {
      * }
      */
     hasComponent(componentClass: any): boolean {
-        return this.components.has(componentClass.name);
+        const hasComponent = this.components.has(componentClass);
+        console.log(`[Entity ${this.id}] 检查组件 ${componentClass.name}: ${hasComponent}`);
+        return hasComponent;
     }
 
     /**
@@ -126,7 +139,9 @@ export class Entity {
      * }
      */
     hasComponents(ComponentClasses: (new (...args: any[]) => Component)[]): boolean {
-        return ComponentClasses.every(ComponentClass => this.hasComponent(ComponentClass));
+        const hasAll = ComponentClasses.every(ComponentClass => this.hasComponent(ComponentClass));
+        console.log(`[Entity ${this.id}] 检查多个组件: ${hasAll}`);
+        return hasAll;
     }
 
     /**
@@ -142,7 +157,9 @@ export class Entity {
      * });
      */
     getAllComponents(): Component[] {
-        return Array.from(this.components.values());
+        const components = Array.from(this.components.values());
+        console.log(`[Entity ${this.id}] 获取所有组件: ${components.length} 个`);
+        return components;
     }
 
     getScene(): Phaser.Scene {
@@ -156,7 +173,9 @@ export class Entity {
      * 销毁后的实体不应该再被使用。
      */
     destroy(): void {
+        console.log(`[Entity ${this.id}] 销毁实体`);
         this.components.forEach(component => {
+            console.log(`[Entity ${this.id}] 销毁组件: ${component.constructor.name}`);
             component.destroy?.();
         });
         this.components.clear();

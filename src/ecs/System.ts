@@ -40,6 +40,7 @@ export abstract class System {
      */
     constructor(world: World) {
         this.world = world;
+        console.log(`[System] 创建系统: ${this.constructor.name}`);
     }
 
     /**
@@ -136,7 +137,10 @@ export abstract class System {
      *     console.log('系统已销毁');
      * }
      */
-    destroy?(): void;
+    destroy(): void {
+        console.log(`[System] 销毁系统: ${this.constructor.name}`);
+        // 子类可以重写此方法以进行清理
+    }
 
     /**
      * 系统暂停方法
@@ -178,6 +182,11 @@ export abstract class System {
     }
 
     setEnabled(enabled: boolean): void {
+        console.log(`[System] ${this.constructor.name} 设置启用状态: ${enabled}`);
         this.enabled = enabled;
+    }
+
+    isEnabled(): boolean {
+        return this.enabled;
     }
 } 

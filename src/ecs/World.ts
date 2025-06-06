@@ -41,7 +41,7 @@ export class World {
     private scene: Phaser.Scene;
     
     /** 所有活跃实体的集合 */
-    private entities: Set<Entity> = new Set();
+    private entities: Map<number, Entity> = new Map();
     
     /** 所有注册系统的数组，按优先级排序 */
     private systems: System[] = [];
@@ -52,6 +52,8 @@ export class World {
     /** 待添加的实体队列，用于延迟添加避免迭代冲突 */
     private entitiesToAdd: Set<Entity> = new Set();
 
+    private nextEntityId: number = 0;
+
     /**
      * 构造函数 - 初始化世界实例
      * 
@@ -59,6 +61,7 @@ export class World {
      */
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+        console.log('[World] 创建 ECS 世界');
     }
 
     /**
@@ -75,8 +78,10 @@ export class World {
      * enemy.addComponent(new HealthComponent(100));
      */
     createEntity(): Entity {
+        const id = this.nextEntityId++;
         const entity = new Entity(this.scene);
         this.entitiesToAdd.add(entity);
+        console.log(`[World] 创建实体: ${id}`);
         return entity;
     }
 
@@ -94,6 +99,7 @@ export class World {
      * }
      */
     removeEntity(entity: Entity): void {
+        console.log(`[World] 移除实体: ${entity.id}`);
         this.entitiesToRemove.add(entity);
     }
 
@@ -110,6 +116,7 @@ export class World {
      * world.addSystem(new RenderSystem(world));
      */
     addSystem(system: System): void {
+        console.log(`[World] 添加系统: ${system.constructor.name}`);
         this.systems.push(system);
         
         // 按优先级排序系统，确保执行顺序正确
@@ -126,22 +133,15 @@ export class World {
     /**
      * 从世界中移除系统
      * 
-     * @param systemClass 要移除的系统类型
+     * @param system 要移除的系统实例
      * @example
      * world.removeSystem(DebugSystem);
      */
-    removeSystem(systemClass: new (...args: any[]) => System): void {
-        const index = this.systems.findIndex(system => system instanceof systemClass);
+    removeSystem(system: System): void {
+        console.log(`[World] 移除系统: ${system.constructor.name}`);
+        const index = this.systems.indexOf(system);
         if (index !== -1) {
-            const system = this.systems[index];
-            
-            // 如果系统有销毁方法，调用它
-            if (system.destroy) {
-                system.destroy();
-            }
-            
             this.systems.splice(index, 1);
-            console.log(`系统 ${system.getName()} 已从世界中移除`);
         }
     }
 
@@ -182,7 +182,7 @@ export class World {
         const result: Entity[] = [];
         
         // 遍历所有实体，检查是否拥有所需的组件
-        for (const entity of Array.from(this.entities)) {
+        for (const entity of Array.from(this.entities.values())) {
             // 使用Entity的hasComponents方法进行批量检查
             if (entity.hasComponents(componentClasses)) {
                 result.push(entity);
@@ -204,7 +204,7 @@ export class World {
      * console.log(`世界中有 ${allEntities.length} 个实体`);
      */
     getAllEntities(): Entity[] {
-        return Array.from(this.entities);
+        return Array.from(this.entities.values());
     }
 
     /**
@@ -233,35 +233,29 @@ export class World {
      * }
      */
     update(deltaTime: number): void {
-        // 第一步：添加待添加的实体
+        console.log(`[World] 更新世界，deltaTime: ${deltaTime}`);
+        
+        // 处理待添加的实体
         if (this.entitiesToAdd.size > 0) {
-            for (const entity of Array.from(this.entitiesToAdd)) {
-                this.entities.add(entity);
-            }
+            Array.from(this.entitiesToAdd).forEach(entity => {
+                this.entities.set(entity.id, entity);
+            });
             this.entitiesToAdd.clear();
         }
 
-        // 第二步：移除待删除的实体
+        // 处理待移除的实体
         if (this.entitiesToRemove.size > 0) {
-            for (const entity of Array.from(this.entitiesToRemove)) {
-                this.entities.delete(entity);
-                // 清理实体资源
+            Array.from(this.entitiesToRemove).forEach(entity => {
+                this.entities.delete(entity.id);
                 entity.destroy();
-            }
+            });
             this.entitiesToRemove.clear();
         }
 
-        // 第三步：更新所有启用的系统
+        // 更新系统
         for (const system of this.systems) {
-            if (system.enabled) {
-                try {
-                    system.update(deltaTime);
-                } catch (error) {
-                    console.error(`系统 ${system.getName()} 更新时发生错误:`, error);
-                    // 可以选择禁用出错的系统
-                    // system.setEnabled(false);
-                }
-            }
+            console.log(`[World] 更新系统: ${system.constructor.name}`);
+            system.update(deltaTime);
         }
     }
 
@@ -308,8 +302,9 @@ export class World {
      * }
      */
     clear(): void {
+        console.log('[World] 销毁世界');
         // 销毁所有实体
-        for (const entity of Array.from(this.entities)) {
+        for (const entity of Array.from(this.entities.values())) {
             entity.destroy();
         }
         this.entities.clear();
@@ -346,5 +341,23 @@ export class World {
             pendingAdditions: this.entitiesToAdd.size,
             pendingRemovals: this.entitiesToRemove.size
         };
+    }
+
+    getEntities(): Entity[] {
+        return Array.from(this.entities.values());
+    }
+
+    getEntityById(id: number): Entity | undefined {
+        return this.entities.get(id);
+    }
+
+    destroy(): void {
+        console.log('[World] 销毁世界');
+        const entities = Array.from(this.entities.values());
+        entities.forEach(entity => {
+            entity.destroy();
+        });
+        this.entities.clear();
+        this.systems = [];
     }
 } 

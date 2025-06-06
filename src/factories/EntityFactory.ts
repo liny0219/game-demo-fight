@@ -20,20 +20,31 @@ export class EntityFactory {
     }
 
     createPlayer(x: number, y: number): Entity {
+        console.log(`[EntityFactory] 开始创建玩家实体 at (${x}, ${y})`);
         const entity = this.world.createEntity();
 
         // 添加基础组件
+        console.log('[EntityFactory] 添加 TransformComponent');
         entity.addComponent(new TransformComponent(x, y));
-        entity.addComponent(new SpriteComponent(this.scene, x, y, 'player'));
+        
+        console.log('[EntityFactory] 创建 SpriteComponent');
+        const spriteComponent = new SpriteComponent(this.scene, x, y, 'player');
+        console.log('[EntityFactory] 添加 SpriteComponent');
+        entity.addComponent(spriteComponent);
+        
+        console.log('[EntityFactory] 添加 VelocityComponent');
         entity.addComponent(new VelocityComponent(0, 0, 200));
+        
+        console.log('[EntityFactory] 添加 HealthComponent');
         entity.addComponent(new HealthComponent(100));
+        
+        console.log('[EntityFactory] 添加 HealthBarComponent');
         entity.addComponent(new HealthBarComponent(this.scene, 50, 6, -25, 100));
+        
+        console.log('[EntityFactory] 添加 PlayerComponent');
         entity.addComponent(new PlayerComponent());
 
-        // 设置精灵属性
-        const sprite = entity.getComponent(SpriteComponent)!;
-        sprite.setSize(32, 32);
-
+        console.log('[EntityFactory] 玩家实体创建完成');
         return entity;
     }
 
@@ -42,7 +53,8 @@ export class EntityFactory {
 
         // 添加基础组件
         entity.addComponent(new TransformComponent(x, y));
-        entity.addComponent(new SpriteComponent(this.scene, x, y, 'enemy'));
+        const spriteComponent = new SpriteComponent(this.scene, x, y, 'enemy');
+        entity.addComponent(spriteComponent);
         entity.addComponent(new VelocityComponent(0, 0, 100));
         
         // 敌人的健康组件 - 没有无敌帧机制
@@ -55,10 +67,6 @@ export class EntityFactory {
         entity.addComponent(new HealthBarComponent(this.scene, 32, 4, -20, 100));
         entity.addComponent(new EnemyComponent());
 
-        // 设置精灵属性
-        const sprite = entity.getComponent(SpriteComponent)!;
-        sprite.setSize(32, 32);
-
         return entity;
     }
 
@@ -67,14 +75,13 @@ export class EntityFactory {
 
         // 添加基础组件
         entity.addComponent(new TransformComponent(x, y));
-        entity.addComponent(new SpriteComponent(this.scene, x, y, 'projectile'));
+        const spriteComponent = new SpriteComponent(this.scene, x, y, 'projectile');
+        entity.addComponent(spriteComponent);
         entity.addComponent(new VelocityComponent(vx, vy, 400));
         entity.addComponent(new ProjectileComponent(30, 3000)); // 30伤害，3秒生命周期
 
-        // 设置精灵属性
-        const sprite = entity.getComponent(SpriteComponent)!;
-        sprite.setSize(8, 8);
-        sprite.setDepth(1);
+        // 设置投射物深度
+        spriteComponent.setDepth(1);
 
         return entity;
     }

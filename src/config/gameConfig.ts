@@ -16,7 +16,8 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { x: 0, y: 0 },
-            debug: false
+            debug: false,
+            fps: 60
         }
     },
     scene: [MainScene, GameOverScene],
@@ -25,13 +26,20 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     },
     render: {
         pixelArt: false,
-        antialias: true
+        antialias: true,
+        roundPixels: true,
+        powerPreference: 'high-performance'
     },
     input: {
         keyboard: true,
         mouse: true,
         touch: true,
         gamepad: false
+    },
+    fps: {
+        target: 60,
+        forceSetTimeOut: true,
+        deltaHistory: 10
     }
 };
 

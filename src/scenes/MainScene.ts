@@ -50,6 +50,15 @@ export class MainScene extends Phaser.Scene {
     }
 
     create(): void {
+        // 初始化物理系统
+        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
+        
+        // 确保物理系统已启用
+        if (!this.physics.world) {
+            console.error('Physics system not initialized');
+            return;
+        }
+
         // 初始化ECS世界
         this.world = new World(this);
         this.entityFactory = new EntityFactory(this.world, this);
@@ -59,31 +68,34 @@ export class MainScene extends Phaser.Scene {
         this.world.addSystem(new MovementSystem(this.world));
         this.world.addSystem(new PlayerInputSystem(this.world, this));
         this.world.addSystem(new EnemyAISystem(this.world));
-        this.world.addSystem(new EnemyVisualSystem(this.world)); // 敌人视觉特效系统
+        this.world.addSystem(new EnemyVisualSystem(this.world));
         this.collisionSystem = new CollisionSystem(this.world, this);
         this.world.addSystem(this.collisionSystem);
         this.world.addSystem(new HealthBarSystem(this.world));
         this.world.addSystem(new ProjectileSystem(this.world));
 
-        // 创建玩家
-        this.player = this.entityFactory.createPlayer(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY
-        );
+        // 等待一帧以确保物理系统完全初始化
+        this.time.delayedCall(0, () => {
+            // 创建玩家
+            this.player = this.entityFactory.createPlayer(
+                this.cameras.main.centerX,
+                this.cameras.main.centerY
+            );
 
-        // 创建UI
-        this.createUI();
+            // 创建UI
+            this.createUI();
 
-        // 设置事件监听
-        this.setupEventListeners();
+            // 设置事件监听
+            this.setupEventListeners();
 
-        // 开始第一波
-        this.startWave();
-        
-        // 显示第一波开始信息
-        this.showWaveStartMessage();
+            // 开始第一波
+            this.startWave();
+            
+            // 显示第一波开始信息
+            this.showWaveStartMessage();
 
-        console.log('ECS 主场景创建完成');
+            console.log('ECS 主场景创建完成');
+        });
     }
 
     update(time: number, delta: number): void {
@@ -238,8 +250,6 @@ export class MainScene extends Phaser.Scene {
         }
     }
 
-
-
     private startWave(): void {
         const enemyCount = Math.min(3 + this.currentWave, 10);
         
@@ -337,8 +347,6 @@ export class MainScene extends Phaser.Scene {
             });
         }
     }
-
-
 
     private addScore(points: number): void {
         this.score += points;
