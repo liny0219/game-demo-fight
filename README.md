@@ -2,6 +2,8 @@
 
 这是一个将 OOP 架构的 Phaser.js 游戏重构为 ECS (Entity Component System) 架构的项目。
 
+## [DEMO](https://liny0219.github.io/game-demo-fight/) 
+
 ## 项目结构
 
 ```
